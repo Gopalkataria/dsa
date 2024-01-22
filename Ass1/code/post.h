@@ -12,9 +12,13 @@ typedef struct Post {
     char * username ; 
     char * caption ; 
     Comment * comments ; 
-    Post * next ; 
+    int comment_count ; 
+    struct Post * next ; 
+    struct Post * prev ; 
 } Post ; 
 
-Post * createPost( char * name , char * caption ) ;
+Post * createPost( char * username , char * caption ) ;
+
+
 
 #endif

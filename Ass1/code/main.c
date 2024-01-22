@@ -1,10 +1,15 @@
-
 #include "platform.h"
 
-int main()
-{
-   
-    Platform *myPlatform = createPlatform();
+// social media code less go
 
-    return 0;
+
+
+int main() {
+
+
+    createPlatform() ; 
+    
+    
+
+    return 0 ; 
 }
