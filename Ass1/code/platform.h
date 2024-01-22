@@ -20,13 +20,23 @@ Platform * createPlatform() ;
 
 bool addPost( char * username  , char * caption ) ; 
 
-bool delPost( int n ) ;
+bool deletePost( int n ) ;
 
 Post * viewPost( int  n ) ; 
 
 Post * currPost( ) ; 
 
 Post * nextPost() ; 
-Post * prevPost() ; 
+Post * prevPost() ;
+
+bool addComment( char * username , char * content ) ;
+
+bool deleteComment( int n) ; 
+
+Comment * viewComments( ) ; 
+
+bool addReply(char * username , char * content , int n ) ; 
+
+bool deleteReply( int n , int m ) ; 
 
 #endif

@@ -16,3 +16,5 @@ typedef struct Comment
 Comment * createComment( char * username , char * content ) ;
 
 #endif
+
+

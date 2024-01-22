@@ -1,6 +1,6 @@
 #ifndef REPLY_H
 #define REPLY_H
-#define MAX_STR_LEN 100
+
 
 #include <stdio.h>
 #include <stdlib.h>
