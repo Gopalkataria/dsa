@@ -1,13 +1,20 @@
-// post.h
 #ifndef POST_H
 #define POST_H
 
-typedef struct Post
-{
-    char *username;
-    char *caption;
-} Post;
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
 
-Post *createPost(char *username, char *caption);
+#include "comment.h"
+
+typedef struct Post {
+    char * username ; 
+    char * caption ; 
+    Comment * comments ; 
+    Post * next ; 
+} Post ; 
+
+Post * createPost( char * name , char * caption ) ;
 
 #endif
