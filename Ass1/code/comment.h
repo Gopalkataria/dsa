@@ -2,6 +2,8 @@
 #ifndef COMMENT_H
 #define COMMENT_H
 
+#include "reply.h"
+
 typedef struct Comment
 {
     char *username;
