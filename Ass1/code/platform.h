@@ -18,6 +18,8 @@ extern Platform * PLATFORM ;
 
 Platform * createPlatform() ;
 
+void deletePlatform() ;
+
 bool addPost( char * username  , char * caption ) ; 
 
 bool deletePost( int n ) ;

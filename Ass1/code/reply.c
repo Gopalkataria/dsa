@@ -5,6 +5,7 @@ Reply *createReply(char *username, char *content){
     newReply->username = initializeString(username) ; 
     newReply->content = initializeString(content) ; 
     newReply->next = NULL ; 
+    return newReply ; 
 }
 
 

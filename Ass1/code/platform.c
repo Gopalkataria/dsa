@@ -18,10 +18,11 @@ bool addPost(char *username, char *caption)
     Post *new_post = createPost(username, caption);
     assert(new_post != NULL);
     Post *post = PLATFORM->posts;
-    if (post != NULL)
+    if (post != NULL) {
         post->prev = new_post;
-    PLATFORM->posts = new_post;
+    }
     new_post->next = post;
+    PLATFORM->posts = new_post;
 
     if (PLATFORM->lastVeiwedEqualsLastPost)
     {
@@ -42,8 +43,10 @@ bool deletePost(int n)
     }
     Post *prev_post = post->prev;
     Post *next_post = post->next;
-    prev_post->next = next_post;
-    next_post->prev = prev_post;
+    if (prev_post != NULL)
+        prev_post->next = next_post;
+    if (next_post != NULL)
+        next_post->prev = prev_post;
 
     if (n == 1)
     {
@@ -63,12 +66,6 @@ bool deletePost(int n)
         Comment *_old_comment = post->comments;
         post->comments = post->comments->next;
         while (_old_comment->replies != NULL)
-            while (_old_comment->replies != NULL)
-            {
-                Reply *_old_reply = _old_comment->replies;
-                _old_comment->replies = _old_comment->replies->next;
-                free(_old_reply);
-            }
         {
             Reply *_old_reply = _old_comment->replies;
             _old_comment->replies = _old_comment->replies->next;
@@ -108,8 +105,12 @@ Post *currPost()
 
 Post *nextPost()
 {
+    // since the posts are stored in a doubly linked list with the latest post being 
+    //at the head of the list, it's counterinuitive but next post actually refers to 
+    //previous post and prev node refers to next post, because of how posts are added 
+    //chronologically 
     Post *next_post = PLATFORM->lastViewedPost->next;
-    if (nextPost != NULL)
+    if (PLATFORM->lastViewedPost->next != NULL)
         PLATFORM->lastViewedPost = next_post;
     return next_post;
 }
@@ -117,7 +118,7 @@ Post *nextPost()
 Post *prevPost()
 {
     Post *prev_post = PLATFORM->lastViewedPost->prev;
-    if (prev_post != NULL)
+    if (PLATFORM->lastViewedPost->prev != NULL)
         PLATFORM->lastViewedPost = prev_post;
     return prev_post;
 }
@@ -148,6 +149,8 @@ bool addComment(char *username, char *content)
 
 bool deleteComment(int n)
 {
+    if (PLATFORM->lastViewedPost == NULL || PLATFORM->lastViewedPost->comments == NULL)
+        return false;
     int m = PLATFORM->lastViewedPost->comment_count;
     if (n < 1 || m < n)
         return false;
@@ -177,65 +180,104 @@ bool deleteComment(int n)
         free(_old_reply);
     }
 
+    free(delete_comment);
     PLATFORM->lastViewedPost->comment_count--;
     return true;
 }
 
+Comment *viewComments()
+{
+    if (PLATFORM->lastViewedPost == NULL)
+        return NULL;
+    return PLATFORM->lastViewedPost->comments;
+}
 
-Comment * viewComments(){
-    if ( PLATFORM->lastViewedPost == NULL ) 
-    return NULL ; 
-    return PLATFORM->lastViewedPost->comments ; 
+bool addReply(char *username, char *content, int n)
+{
+    if (PLATFORM->lastViewedPost == NULL)
+        return false;
+    Comment *comment = PLATFORM->lastViewedPost->comments;
+    for (int i = 0; i < n - 1; i++)
+    {
+        comment = comment->next;
+    }
+    Reply *new_reply = createReply(username, content);
+    if (new_reply == NULL)
+        return false;
+    Reply *old_reply = comment->replies;
+    if (old_reply == NULL)
+    {
+        comment->replies = new_reply;
+    }
+    else
+    {
+        while (old_reply->next != NULL)
+        {
+            old_reply = old_reply->next;
+        }
+        old_reply->next = new_reply;
+    }
+    comment->reply_count++;
+    return true;
+}
+
+bool deleteReply(int n, int m)
+{
+    if (PLATFORM->lastViewedPost == NULL)
+        return false;
+    Comment *comment = PLATFORM->lastViewedPost->comments;
+    for (int i = 0; i < n - 1; i++)
+    {
+        comment = comment->next;
+    }
+    Reply *old_reply = comment->replies;
+    if (old_reply == NULL)
+        return false;
+    Reply *delete_reply = NULL;
+    if (m == comment->reply_count)
+    {
+        comment->replies = old_reply->next;
+        delete_reply = old_reply;
+    }
+    else
+    {
+        for (int i = 0; i < comment->reply_count - m - 1; i++)
+        {
+            old_reply = old_reply->next;
+        }
+        delete_reply = old_reply->next;
+        old_reply->next = delete_reply->next;
+    }
+    free(delete_reply);
+    comment->reply_count--;
+    return true;
 }
 
 
-bool addReply( char * username , char * content  , int n ){
-    if ( PLATFORM->lastViewedPost == NULL ) 
-    return false ; 
-    Comment * comment = PLATFORM->lastViewedPost->comments ; 
-    for ( int i = 0 ; i < n - 1 ; i++ ){
-        comment = comment->next ; 
-    }
-    Reply * new_reply = createReply( username , content ) ; 
-    if ( new_reply == NULL ) 
-    return false ; 
-    Reply * old_reply = comment->replies ; 
-    if ( old_reply == NULL ) {
-        comment->replies = new_reply ; 
-    } else {
-        while ( old_reply->next != NULL ){
-            old_reply = old_reply->next ; 
+void deletePlatform() {
+
+    Post * post = PLATFORM->posts ; 
+    while ( post != NULL ) {
+        Post * old_post = post ; 
+        post = post->next ; 
+        free(old_post->username) ; 
+        free(old_post->caption) ; 
+        Comment * comment = old_post->comments ; 
+        while ( comment != NULL ) {
+            Comment * old_comment = comment ; 
+            comment = comment->next ; 
+            free(old_comment->username) ; 
+            free(old_comment->content) ; 
+            Reply * reply = old_comment->replies ; 
+            while ( reply != NULL ) {
+                Reply * old_reply = reply ; 
+                reply = reply->next ; 
+                free(old_reply->username) ; 
+                free(old_reply->content) ; 
+                free(old_reply) ; 
+            }
+            free(old_comment) ; 
         }
-        old_reply->next = new_reply ; 
+        free(old_post) ; 
     }
-    comment->reply_count++ ; 
-    return true ;
-
-}
-
-bool deleteReply( int n , int m ){
-    if ( PLATFORM->lastViewedPost == NULL ) 
-    return false ; 
-    Comment * comment = PLATFORM->lastViewedPost->comments ; 
-    for ( int i = 0 ; i < n - 1 ; i++ ){
-        comment = comment->next ; 
-    }
-    Reply * old_reply = comment->replies ; 
-    if ( old_reply == NULL ) 
-    return false ; 
-    Reply * delete_reply = NULL ; 
-    if ( m == comment->reply_count ){
-        comment->replies = old_reply->next ; 
-        delete_reply = old_reply ; 
-    } else {
-        for ( int i = 0 ; i < comment->reply_count - m - 1 ; i++ ){
-            old_reply = old_reply->next ; 
-        }
-        delete_reply = old_reply->next ; 
-        old_reply->next = delete_reply->next ; 
-    }
-    free(delete_reply) ; 
-    comment->reply_count-- ; 
-    return true ;
-
 }

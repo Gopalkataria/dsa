@@ -12,4 +12,6 @@
 
 char *initializeString(char *strn);
 
+void printhelp() ; 
+void inpUserAndCaption() ; 
 #endif
