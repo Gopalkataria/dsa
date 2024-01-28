@@ -1,28 +1,32 @@
 #include "platform.h"
+#include <assert.h>
 
 #define MAX_INP_SIZE 100
 
 void displayComm(Comment *comm)
 {
-    printf("    %s [%d]: %s \n", comm->username, comm->reply_count, comm->content);
+
+    assert(comm != NULL);
+    printf("  |-%s [%d]: %s \n", comm->username, comm->reply_count, comm->content);
     Reply *rep = comm->replies;
     for (int i = 0; i < comm->reply_count; i++)
     {
-        printf("         %s : %s \n", rep->username, rep->content);
+        printf("    |-%s : %s \n", rep->username, rep->content);
         rep = rep->next;
     }
 }
 
 void displayPost(Post *post)
 {
-    printf("\n %s [%d]: %s \n", post->username, post->comment_count, post->caption);
+    assert(post != NULL ) ; 
+    printf("|- %s [%d]: %s \n", post->username, post->comment_count, post->caption);
     Comment *comm = post->comments;
     for (int i = 0; i < post->comment_count; i++)
     {
         displayComm(comm);
         comm = comm->next;
     }
-    printf("\n\n");
+    printf("|\n");
 }
 
 void display()
@@ -35,11 +39,6 @@ void display()
         {
             post = post->next;
         }
-    }
-    for (int i = 0; i < PLATFORM->post_count; i++)
-    {
-        displayPost(post);
-        post = post->prev;
     }
 }
 
@@ -67,6 +66,7 @@ int main()
     //         printf("Create a platform first,  enter \"help\" for a list of commands \n:");
     //     }
     // }
+    // debug statements
     createPlatform();
 
     char username[MAX_INP_SIZE];
@@ -155,7 +155,20 @@ int main()
                 printf("\n:");
             }
         }
-        else if (strcmp(inp, "del_comment") == 0)
+        else if ( strcmp( inp , "view_post") == 0 ){
+            scanf("%d", &n);
+            req_post = viewPost(n);
+            if (req_post != NULL)
+            {
+                displayPost(req_post);
+                printf("\n:");
+            }
+            else
+            {
+                printf("No such post exists \n:");
+            }
+        }
+        else if (strcmp(inp, "delete_comment") == 0)
         {
             scanf("%d", &n);
             if (!deleteComment(n))
@@ -175,17 +188,17 @@ int main()
             inpUserAndCaption(username, caption);
 
             scanf("%d", &n);
-            if (!addReply(username, caption, n))
+
+            if (PLATFORM->lastViewedPost == NULL)
             {
-                if (PLATFORM->lastViewedPost == NULL)
-                {
-                    printf("No post to comment on \n:");
-                }
-                else if (PLATFORM->lastViewedPost->comments == NULL)
-                {
-                    printf("No comment exists on lastviewed post \n:");
-                }
-                else
+                printf("No post to comment on \n:");
+            }
+            else if (PLATFORM->lastViewedPost->comments == NULL)
+            {
+                printf("No comment exists on lastviewed post \n:");
+            }
+            else if (!addReply(username, caption, n))
+            {
                 {
                     printf("No such comment exists \n:");
                 }
@@ -195,12 +208,14 @@ int main()
                 printf("\n:");
             }
         }
-        else if (strcmp(inp, "del_reply") == 0)
+        else if (strcmp(inp, "delete_reply") == 0)
         {
-            inpUserAndCaption(username, caption);
-
-            scanf("%d %d", &n , &m);
-            if (!deleteReply( n , m ))
+            // inpUserAndCaption(username, caption);
+            printf("Enter reply number : ") ; 
+            scanf("%d", &n);
+            printf("Enter comment number : ") ;
+            scanf("%d", &m);
+            if (!deleteReply(n, m))
             {
                 if (PLATFORM->lastViewedPost == NULL)
                 {
@@ -212,7 +227,7 @@ int main()
                 }
                 else
                 {
-                    printf("No such replt exists \n:");
+                    printf("No such reply exists \n:");
                 }
             }
             else
@@ -220,12 +235,18 @@ int main()
                 printf("\n:");
             }
         }
-        else if(strcmp(inp , "exit") == 0) {
-            printf("exiting\n") ;
-            break ; 
+        else if ( strcmp(inp, "create_platform" ) == 0 ){
+            printf("Platform already exists \n:");
+        }
+        else if (strcmp(inp, "exit") == 0)
+        {
+            printf("exiting\n");
+            break;
         }
         else
         {
+            // clean up entire input line to avoid multiple errors 
+            scanf("%[^\n]s", NULL);
             printf("Invalid Command %s, enter \"help\" for a list of commands \n:", inp);
         }
     }

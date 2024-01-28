@@ -2,6 +2,7 @@
 
 Platform *PLATFORM = NULL;
 
+// @brief Creates a new platform
 Platform *createPlatform()
 {
 
@@ -13,12 +14,16 @@ Platform *createPlatform()
     return PLATFORM;
 }
 
+// @brief Adds a new post to the platform
+// @param username The username of poster
+// @param caption The caption of the post
 bool addPost(char *username, char *caption)
 {
     Post *new_post = createPost(username, caption);
     assert(new_post != NULL);
     Post *post = PLATFORM->posts;
-    if (post != NULL) {
+    if (post != NULL)
+    {
         post->prev = new_post;
     }
     new_post->next = post;
@@ -32,6 +37,8 @@ bool addPost(char *username, char *caption)
     return true;
 }
 
+// @brief Deletes nth recent post from the platform
+// 
 bool deletePost(int n)
 {
     if (n > PLATFORM->post_count || PLATFORM->post_count == 0)
@@ -69,9 +76,13 @@ bool deletePost(int n)
         {
             Reply *_old_reply = _old_comment->replies;
             _old_comment->replies = _old_comment->replies->next;
+            free(_old_reply->username);
+            free(_old_reply->content);
             free(_old_reply);
         }
 
+        free(_old_comment->username);
+        free(_old_comment->content);
         free(_old_comment);
     }
 
@@ -82,6 +93,7 @@ bool deletePost(int n)
     return true;
 }
 
+// @brief Views nth recent post from the platform
 Post *viewPost(int n)
 {
     if (n <= 0)
@@ -98,31 +110,67 @@ Post *viewPost(int n)
     return post;
 }
 
+// @brief Returns the current post
 Post *currPost()
 {
+    if (PLATFORM->lastVeiwedEqualsLastPost)
+    {
+        PLATFORM->lastVeiwedEqualsLastPost = 0;
+        return PLATFORM->posts;
+    }
     return PLATFORM->lastViewedPost;
 }
 
+// @brief Returns the next post
 Post *nextPost()
 {
-    // since the posts are stored in a doubly linked list with the latest post being 
-    //at the head of the list, it's counterinuitive but next post actually refers to 
-    //previous post and prev node refers to next post, because of how posts are added 
-    //chronologically 
+    if ( PLATFORM->posts == NULL  || PLATFORM->lastViewedPost == NULL) 
+    return NULL  ; 
+
+    PLATFORM->lastVeiwedEqualsLastPost = 0;
+
+    if( PLATFORM->post_count == 1 ){
+        PLATFORM->lastViewedPost = PLATFORM->posts ;
+        return PLATFORM->posts ; 
+    }
+
     Post *next_post = PLATFORM->lastViewedPost->next;
+    if( next_post == NULL ){
+        return PLATFORM->lastViewedPost ; 
+    }
     if (PLATFORM->lastViewedPost->next != NULL)
         PLATFORM->lastViewedPost = next_post;
     return next_post;
 }
 
+// @brief Returns the previous post
 Post *prevPost()
 {
+
+    if (PLATFORM->posts == NULL || PLATFORM->lastViewedPost == NULL)
+        return NULL;
+
+    PLATFORM->lastVeiwedEqualsLastPost = 0;
+
+    if (PLATFORM->post_count == 1)
+    {
+        PLATFORM->lastViewedPost = PLATFORM->posts;
+        return PLATFORM->posts;
+    }
+
     Post *prev_post = PLATFORM->lastViewedPost->prev;
+    if (prev_post == NULL)
+    {
+        return PLATFORM->lastViewedPost;
+    }
     if (PLATFORM->lastViewedPost->prev != NULL)
         PLATFORM->lastViewedPost = prev_post;
     return prev_post;
 }
 
+// @brief Adds a comment to the current post
+// @param username The username of the commenter
+// @param content The content of the comment
 bool addComment(char *username, char *content)
 {
     if (PLATFORM->lastViewedPost == NULL)
@@ -147,6 +195,7 @@ bool addComment(char *username, char *content)
     return true;
 }
 
+// @brief Deletes nth comment from the current post
 bool deleteComment(int n)
 {
     if (PLATFORM->lastViewedPost == NULL || PLATFORM->lastViewedPost->comments == NULL)
@@ -154,8 +203,6 @@ bool deleteComment(int n)
     int m = PLATFORM->lastViewedPost->comment_count;
     if (n < 1 || m < n)
         return false;
-    // 10 9 8 7 6 5 4 3 2 1
-    // n = 7
     Comment *oldcomment = PLATFORM->lastViewedPost->comments;
     Comment *delete_comment = NULL;
     if (n == m)
@@ -185,6 +232,7 @@ bool deleteComment(int n)
     return true;
 }
 
+// @brief Returns the comments of the current post
 Comment *viewComments()
 {
     if (PLATFORM->lastViewedPost == NULL)
@@ -192,6 +240,10 @@ Comment *viewComments()
     return PLATFORM->lastViewedPost->comments;
 }
 
+// @brief Adds a reply to nth comment of the current post
+// @param username The username of the replier
+// @param content The content of the reply
+// @param n The nth recent comment
 bool addReply(char *username, char *content, int n)
 {
     if (PLATFORM->lastViewedPost == NULL)
@@ -221,6 +273,9 @@ bool addReply(char *username, char *content, int n)
     return true;
 }
 
+// @brief Deletes mth reply from nth comment of the current post
+// @param n The nth recent comment
+// @param m The mth recent reply
 bool deleteReply(int n, int m)
 {
     if (PLATFORM->lastViewedPost == NULL)
@@ -253,31 +308,36 @@ bool deleteReply(int n, int m)
     return true;
 }
 
+// @brief Deletes the platform, free all memory to avoid leaks 
+// when the user exits, the social networks ceases to exist :( 
+void deletePlatform()
+{
 
-void deletePlatform() {
-
-    Post * post = PLATFORM->posts ; 
-    while ( post != NULL ) {
-        Post * old_post = post ; 
-        post = post->next ; 
-        free(old_post->username) ; 
-        free(old_post->caption) ; 
-        Comment * comment = old_post->comments ; 
-        while ( comment != NULL ) {
-            Comment * old_comment = comment ; 
-            comment = comment->next ; 
-            free(old_comment->username) ; 
-            free(old_comment->content) ; 
-            Reply * reply = old_comment->replies ; 
-            while ( reply != NULL ) {
-                Reply * old_reply = reply ; 
-                reply = reply->next ; 
-                free(old_reply->username) ; 
-                free(old_reply->content) ; 
-                free(old_reply) ; 
+    Post *post = PLATFORM->posts;
+    while (post != NULL)
+    {
+        Post *old_post = post;
+        post = post->next;
+        free(old_post->username);
+        free(old_post->caption);
+        Comment *comment = old_post->comments;
+        while (comment != NULL)
+        {
+            Comment *old_comment = comment;
+            comment = comment->next;
+            free(old_comment->username);
+            free(old_comment->content);
+            Reply *reply = old_comment->replies;
+            while (reply != NULL)
+            {
+                Reply *old_reply = reply;
+                reply = reply->next;
+                free(old_reply->username);
+                free(old_reply->content);
+                free(old_reply);
             }
-            free(old_comment) ; 
+            free(old_comment);
         }
-        free(old_post) ; 
+        free(old_post);
     }
 }

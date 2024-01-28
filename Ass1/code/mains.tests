@@ -1,0 +1,119 @@
+// Test Case 1
+// Description: Test help command
+// Input: help
+// Expected Output: Display help message
+
+// Test Case 2
+// Description: Test add_post command
+// Input: add_post
+// Expected Output: Prompt for username and caption, add post, display success message
+
+// Test Case 3
+// Description: Test delete_post command with existing post
+// Input: delete_post 1
+// Expected Output: Delete post 1, display success message
+
+// Test Case 4
+// Description: Test delete_post command with non-existing post
+// Input: delete_post 5
+// Expected Output: Display error message
+
+// Test Case 5
+// Description: Test curr_post command with existing post
+// Input: curr_post
+// Expected Output: Display current post
+
+// Test Case 6
+// Description: Test curr_post command with no posts
+// Input: curr_post
+// Expected Output: Display no posts message
+
+// Test Case 7
+// Description: Test prev_post command with existing previous post
+// Input: prev_post
+// Expected Output: Display previous post
+
+// Test Case 8
+// Description: Test prev_post command with no previous post
+// Input: prev_post
+// Expected Output: Display no previous post message
+
+// Test Case 9
+// Description: Test next_post command with existing next post
+// Input: next_post
+// Expected Output: Display next post
+
+// Test Case 10
+// Description: Test next_post command with no next post
+// Input: next_post
+// Expected Output: Display no next post message
+
+// Test Case 11
+// Description: Test disp command
+// Input: disp
+// Expected Output: Display all posts
+
+// Test Case 12
+// Description: Test add_comment command with existing post
+// Input: add_comment
+// Expected Output: Prompt for username and caption, add comment, display success message
+
+// Test Case 13
+// Description: Test add_comment command with no recent posts
+// Input: add_comment
+// Expected Output: Display no recent posts message
+
+// Test Case 14
+// Description: Test del_comment command with existing comment
+// Input: del_comment 1
+// Expected Output: Delete comment 1, display success message
+
+// Test Case 15
+// Description: Test del_comment command with non-existing comment
+// Input: del_comment 5
+// Expected Output: Display error message
+
+// Test Case 16
+// Description: Test add_reply command with existing comment
+// Input: add_reply
+// Expected Output: Prompt for username, caption, and comment number, add reply, display success message
+
+// Test Case 17
+// Description: Test add_reply command with no recent posts
+// Input: add_reply
+// Expected Output: Display no recent posts message
+
+// Test Case 18
+// Description: Test add_reply command with no comments on last viewed post
+// Input: add_reply
+// Expected Output: Display no comments on last viewed post message
+
+// Test Case 19
+// Description: Test add_reply command with non-existing comment
+// Input: add_reply
+// Expected Output: Display error message
+
+// Test Case 20
+// Description: Test del_reply command with existing reply
+// Input: del_reply
+// Expected Output: Prompt for username, caption, comment number, and reply number, delete reply, display success message
+
+// Test Case 21
+// Description: Test del_reply command with no recent posts
+// Input: del_reply
+// Expected Output: Display no recent posts message
+
+// Test Case 22
+// Description: Test del_reply command with no comments on last viewed post
+// Input: del_reply
+// Expected Output: Display no comments on last viewed post message
+
+// Test Case 23
+// Description: Test del_reply command with non-existing reply
+// Input: del_reply
+// Expected Output: Display error message
+
+// Test Case 24
+// Description: Test exit command
+// Input: exit
+// Expected Output: Display exit message and break the loop

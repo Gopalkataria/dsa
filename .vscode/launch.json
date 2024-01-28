@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Ass1/code/a.out",
+            "program": "${workspaceFolder}/Ass1/code/social_network.out",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

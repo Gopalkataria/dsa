@@ -23,7 +23,11 @@ void printhelp() {
     printf("exit: Exit the program.\n\n:");
 }
 
-void inpUserAndCaption(char * username , char * caption ) {
-    scanf("%s" , username) ; 
-     scanf("%[^\n]s", caption) ; 
+// helper function to get username and caption from user
+void inpUserAndCaption(char *username, char *caption)
+{
+    printf("Enter username: ");
+    scanf(" %[^\n]s", username);
+    printf("Enter content: ");
+    scanf(" %[^\n]s", caption);
 }
