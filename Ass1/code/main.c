@@ -26,7 +26,6 @@ void displayPost(Post *post)
         displayComm(comm);
         comm = comm->next;
     }
-    printf("|\n");
 }
 
 void display()
@@ -89,6 +88,7 @@ int main()
         }
         else if (strcmp(inp, "delete_post") == 0)
         {
+            printf("Enter post number : ") ;
             scanf("%d", &n);
             if (deletePost(n))
             {
@@ -138,7 +138,7 @@ int main()
                 printf("No next Post.. \n:");
             };
         }
-        else if (strcmp(inp, "disp") == 0)
+        else if (strcmp(inp, "display") == 0)
         {
             display();
             printf("\n:");
@@ -155,7 +155,26 @@ int main()
                 printf("\n:");
             }
         }
+        else if (strcmp(inp, "view_comments") == 0)
+        {
+            req_post = currPost();
+            if (req_post != NULL)
+            {
+                Comment *comm = PLATFORM->lastViewedPost->comments;
+                for (int i = 0; i < PLATFORM->lastViewedPost->comment_count; i++)
+                {
+                    displayComm(comm);
+                    comm = comm->next;
+                }
+                printf("\n:");
+            }
+            else
+            {
+                printf("No Posts yet.. \n:");
+            }
+        }
         else if ( strcmp( inp , "view_post") == 0 ){
+            printf("Enter post number : ") ;
             scanf("%d", &n);
             req_post = viewPost(n);
             if (req_post != NULL)
@@ -169,7 +188,8 @@ int main()
             }
         }
         else if (strcmp(inp, "delete_comment") == 0)
-        {
+        {   
+            printf("Enter comment number : ") ;
             scanf("%d", &n);
             if (!deleteComment(n))
             {
@@ -186,7 +206,7 @@ int main()
         else if (strcmp(inp, "add_reply") == 0)
         {
             inpUserAndCaption(username, caption);
-
+            printf("Enter comment number : ") ;
             scanf("%d", &n);
 
             if (PLATFORM->lastViewedPost == NULL)
