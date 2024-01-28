@@ -47,29 +47,30 @@ int main()
     printf("Enter help for a list of available commands \n\n:");
 
     char inp[MAX_INP_SIZE];
-    // while (PLATFORM == NULL)
-    // {
-    //     scanf("%s", inp);
-    //     if (strcmp(inp, "create_platform") == 0)
-    //     {
-    //         createPlatform();
-    //         printf("Created platform\n:");
-    //         break;
-    //     }
-    //     if (strcmp(inp, "help") == 0)
-    //     {
-    //         printhelp();
-    //     }
-    //     else
-    //     {
-    //         printf("Create a platform first,  enter \"help\" for a list of commands \n:");
-    //     }
-    // }
+    while (PLATFORM == NULL)
+    {
+        scanf("%s", inp);
+        if (strcmp(inp, "create_platform") == 0)
+        {
+            createPlatform();
+            printf("Created platform\n:");
+            break;
+        }
+        if (strcmp(inp, "help") == 0)
+        {
+            printhelp();
+        }
+        else
+        {
+            printf("Create a platform first,  enter \"help\" for a list of commands \n:");
+        }
+    }
     // debug statements
-    createPlatform();
+    // createPlatform();
 
     char username[MAX_INP_SIZE];
     char caption[MAX_INP_SIZE];
+    char clean[MAX_INP_SIZE];
     int n;
     int m;
     Post *req_post;
@@ -99,7 +100,7 @@ int main()
                 printf("Post doesn't exist\n:");
             }
         }
-        else if (strcmp(inp, "curr_post") == 0)
+        else if (strcmp(inp, "curr_post") == 0 || strcmp(inp, "current_post") == 0)
         {
             req_post = currPost();
             if (req_post != NULL)
@@ -112,7 +113,7 @@ int main()
                 printf("No Posts yet.. \n:");
             }
         }
-        else if (strcmp(inp, "prev_post") == 0)
+        else if (strcmp(inp, "prev_post") == 0 || strcmp(inp, "previous_post") == 0)
         {
             req_post = prevPost();
             if (req_post != NULL)
@@ -155,7 +156,7 @@ int main()
                 printf("\n:");
             }
         }
-        else if (strcmp(inp, "view_comments") == 0)
+        else if (strcmp(inp, "view_comments") == 0 || strcmp(inp, "view_all_comments") == 0)
         {
             req_post = currPost();
             if (req_post != NULL)
@@ -265,8 +266,8 @@ int main()
         }
         else
         {
-            // clean up entire input line to avoid multiple errors 
-            scanf("%[^\n]s", NULL);
+            // clean up entire input line to avoid multiple errors
+            scanf("%[^\n]s", clean);
             printf("Invalid Command %s, enter \"help\" for a list of commands \n:", inp);
         }
     }

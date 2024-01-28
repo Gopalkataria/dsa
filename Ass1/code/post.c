@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// @brief Creates a new post
+// @param username The username of poster
+// @param caption The caption of the post
 Post *createPost(char *username, char *caption){
     Post * newPost  = (Post*) malloc(sizeof(Post)) ;
     newPost->username = initializeString(username) ; 
