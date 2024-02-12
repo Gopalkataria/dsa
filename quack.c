@@ -122,20 +122,18 @@ int main()
     initializeQuack(&quack);
 
     pushFront(&quack, 1);
-    pushRear(&quack, 2);
-    pushFront(&quack, 3);
-    pushRear(&quack , 69 ) ; 
-    printf("Quack: ");
+    pushRear(&quack, 25);
+    pushFront(&quack, 360);
+    pushRear(&quack, 69);
+    printf("quack - ");
     printQuack(&quack);
 
-    printf("Pop from front: %d\n", popFront(&quack));
+    printf("pop front - %d\n", popFront(&quack));
 
-    printf("Quack after popping from front: ");
     printQuack(&quack);
 
-    printf("Pop from rear: %d\n", popRear(&quack));
+    printf("pop rear - %d\n", popRear(&quack));
 
-    printf("Quack after popping from rear: ");
     printQuack(&quack);
 
     return 0;

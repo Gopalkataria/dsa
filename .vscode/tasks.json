@@ -7,11 +7,11 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-Wall",
-                "main.c","platform.c","post.c","comment.c","reply.c","helper.c",
+                "q1.c",
                 "-g",
             ],
             "options": {
-                "cwd": "${workspaceFolder}/Ass1/code"
+                "cwd": "${workspaceFolder}/Ass2/"
             },
             "problemMatcher": [
                 "$gcc"
