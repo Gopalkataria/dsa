@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef struct Node
 {
@@ -35,7 +36,7 @@ void enqueue(Queue *q, Node *node)
 // function to print a tree in a human readable format
 void printTree(Tree tree, int level)
 {
-    // return ;  // dbg
+    // return; // dbg
     if (tree == NULL)
     {
         return;
@@ -86,7 +87,7 @@ int happyNode(Node *N)
     {
         return 1;
     }
-    if (N->phone || (N->left && N->left->phone) || (N->right && N->right->phone) || (N->parent && N->parent->phone))
+    if (N->phone || (N->left != NULL && N->left->phone) || (N->right != NULL && N->right->phone) || (N->parent != NULL && N->parent->phone))
     {
         return 1;
     }
@@ -99,107 +100,124 @@ int happyTree(Tree tree)
     {
         return 1;
     }
-    return happyTree( tree->left) && happyTree( tree->right) && happyNode(tree);
+    return happyTree(tree->left) && happyTree(tree->right) && happyNode(tree);
+}
+
+void dbgTree()
+{
+    if (happyTree(T))
+    {
+        printTree(T, 0);
+        printf("----------------\n");
+    }
 }
 
 int findMinPhones(Tree tree)
 {
     if (tree == NULL)
     {
+        dbgTree();
         return 0;
     }
-
-    if ((tree->parent != NULL && tree->parent->phone) || (tree->left != NULL && tree->left->phone) || (tree->right != NULL && tree->right->phone))
+    if (happyNode(tree))
     {
-        printTree(T, 0);
-        printf("\n-------------------\n");
+        // printf("happy node\n");
+        dbgTree();
         return findMinPhones(tree->left) + findMinPhones(tree->right);
     }
 
     tree->phone = 1;
-    int k, m, flag = 0;
-    k = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
+    int k = 1 + findMinPhones(tree->left) + findMinPhones(tree->right);
+    dbgTree();
+    return k;
     tree->phone = 0;
 
-    if (tree->left != NULL)
+    int flag = 0;
+    int m, n, p;
+
+    if (tree->left)
     {
         tree->left->phone = 1;
-        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
+        m = 1 + findMinPhones(tree->left) + findMinPhones(tree->right);
         if (k > m)
         {
             k = m;
             flag = 1;
         }
+        dbgTree();
         tree->phone = 1;
-        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 2;
+        m = 2 + findMinPhones(tree->left) + findMinPhones(tree->right);
+
         if (k > m)
         {
             k = m;
             flag = 2;
         }
+        dbgTree();
         tree->phone = 0;
         tree->left->phone = 0;
     }
-    if (tree->right != NULL)
+
+    if (tree->right)
     {
         tree->right->phone = 1;
-        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
+        n = 1 + findMinPhones(tree->right) + findMinPhones(tree->left);
         if (k > m)
         {
             k = m;
             flag = 3;
         }
+        dbgTree();
+
         tree->phone = 1;
-        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 2;
-        if (k > m)
+        m = 2 + findMinPhones(tree->left) + findMinPhones(tree->right);
+         if (k > m)
         {
             k = m;
             flag = 4;
         }
+        dbgTree();
+
         tree->phone = 0;
         tree->right->phone = 0;
     }
-    if (tree->right != NULL && tree->left != NULL)
+
+    if (tree->left && tree->right)
     {
-        tree->right->phone = 1;
         tree->left->phone = 1;
-        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 2;
-        if (k > m)
+        tree->right->phone = 1;
+        p = 2 + findMinPhones(tree->left) + findMinPhones(tree->right);
+         if (k > m)
         {
             k = m;
             flag = 5;
         }
+        dbgTree();
 
-        tree->right->phone = 0;
         tree->left->phone = 0;
+        tree->right->phone = 0;
     }
 
-    if (flag == 0)
-    {
+    if( flag == 0){
         tree->phone = 1;
     }
-    if (flag == 1)
-    {
+    if( flag == 1){
         tree->left->phone = 1;
     }
-    if (flag == 2)
-    {
+    if( flag == 2){
         tree->phone = 1;
-        tree->left->phone = 1;
+        tree->left->phone = 1 ; 
     }
-    if (flag == 3)
-    {
+    if( flag == 3){
         tree->right->phone = 1;
     }
-    if (flag == 4)
-    {
+    if( flag == 4){
         tree->phone = 1;
-        tree->right->phone = 1;
+        tree->right->phone = 1 ; 
     }
-    if (flag == 5)
-    {
-        tree->right->phone = 1;
-        tree->left->phone = 1;
+    if( flag == 5){
+        tree->left->phone = 1 ; 
+        tree->right->phone = 1 ; 
     }
 
     return k;
@@ -242,7 +260,7 @@ int main()
 
     int ans = findMinPhones(tree);
     printTree(tree, 0);
-    printf("\n%d", ans);
+    printf("%d", ans);
     // print corr ans
     scanf("%d", &n);
     printf("\n%d", n);
