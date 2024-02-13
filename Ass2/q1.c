@@ -36,7 +36,7 @@ void enqueue(Queue *q, Node *node)
 // function to print a tree in a human readable format
 void printTree(Tree tree, int level)
 {
-    // return; // dbg
+    return; // dbg
     if (tree == NULL)
     {
         return;
@@ -79,7 +79,7 @@ Node *createNode(Node *parent)
 }
 
 Tree T;
-int count;
+int count = -1;
 
 int happyNode(Node *N)
 {
@@ -107,121 +107,51 @@ void dbgTree()
 {
     if (happyTree(T))
     {
-        printTree(T, 0);
-        printf("----------------\n");
+        // printTree(T, 0);
+        // printf("----------------\n");
     }
 }
 
-int findMinPhones(Tree tree)
+int countPhones(Tree tree)
 {
     if (tree == NULL)
     {
-        dbgTree();
         return 0;
     }
-    if (happyNode(tree))
-    {
-        // printf("happy node\n");
-        dbgTree();
-        return findMinPhones(tree->left) + findMinPhones(tree->right);
-    }
-
-    tree->phone = 1;
-    int k = 1 + findMinPhones(tree->left) + findMinPhones(tree->right);
-    dbgTree();
-    return k;
-    tree->phone = 0;
-
-    int flag = 0;
-    int m, n, p;
-
-    if (tree->left)
-    {
-        tree->left->phone = 1;
-        m = 1 + findMinPhones(tree->left) + findMinPhones(tree->right);
-        if (k > m)
-        {
-            k = m;
-            flag = 1;
-        }
-        dbgTree();
-        tree->phone = 1;
-        m = 2 + findMinPhones(tree->left) + findMinPhones(tree->right);
-
-        if (k > m)
-        {
-            k = m;
-            flag = 2;
-        }
-        dbgTree();
-        tree->phone = 0;
-        tree->left->phone = 0;
-    }
-
-    if (tree->right)
-    {
-        tree->right->phone = 1;
-        n = 1 + findMinPhones(tree->right) + findMinPhones(tree->left);
-        if (k > m)
-        {
-            k = m;
-            flag = 3;
-        }
-        dbgTree();
-
-        tree->phone = 1;
-        m = 2 + findMinPhones(tree->left) + findMinPhones(tree->right);
-         if (k > m)
-        {
-            k = m;
-            flag = 4;
-        }
-        dbgTree();
-
-        tree->phone = 0;
-        tree->right->phone = 0;
-    }
-
-    if (tree->left && tree->right)
-    {
-        tree->left->phone = 1;
-        tree->right->phone = 1;
-        p = 2 + findMinPhones(tree->left) + findMinPhones(tree->right);
-         if (k > m)
-        {
-            k = m;
-            flag = 5;
-        }
-        dbgTree();
-
-        tree->left->phone = 0;
-        tree->right->phone = 0;
-    }
-
-    if( flag == 0){
-        tree->phone = 1;
-    }
-    if( flag == 1){
-        tree->left->phone = 1;
-    }
-    if( flag == 2){
-        tree->phone = 1;
-        tree->left->phone = 1 ; 
-    }
-    if( flag == 3){
-        tree->right->phone = 1;
-    }
-    if( flag == 4){
-        tree->phone = 1;
-        tree->right->phone = 1 ; 
-    }
-    if( flag == 5){
-        tree->left->phone = 1 ; 
-        tree->right->phone = 1 ; 
-    }
-
-    return k;
+    return countPhones(tree->left) + countPhones(tree->right) + tree->phone;
 }
+
+void updates()
+{
+    if (happyTree(T))
+    {
+        dbgTree();
+        int x = countPhones(T);
+        if (x < count || count == -1)
+        {
+            count = x;
+        }
+    }
+}
+
+int allperms( Node * Q)
+{
+    if (Q == NULL)
+    {
+        updates();
+        return 0;
+    }
+    
+
+    Q->phone = 1 ; 
+    allperms(Q->next);
+    Q->phone = 0 ;
+    allperms(Q->next);    
+
+    return count;
+}
+
+Queue Gque ; 
 
 int main()
 {
@@ -235,8 +165,11 @@ int main()
     Queue q;
     q.front = NULL;
     q.rear = NULL;
+    Gque.front = NULL;
+    Gque.rear = NULL;
 
     enqueue(&q, tree);
+    enqueue(&Gque, tree);
     int m = 0;
     scanf("%d", &m);
 
@@ -249,20 +182,22 @@ int main()
         {
             node->left = createNode(node);
             enqueue(&q, node->left);
+            enqueue(&Gque, node->left);
         }
         if (r)
         {
             node->right = createNode(node);
             enqueue(&q, node->right);
+            enqueue(&Gque, node->right);
         }
         n -= 2;
     }
 
-    int ans = findMinPhones(tree);
+    int ans = allperms(tree);
     printTree(tree, 0);
     printf("%d", ans);
     // print corr ans
-    scanf("%d", &n);
-    printf("\n%d", n);
+    // scanf("%d", &n);
+    // printf("\n%d", n);
     return 0;
 }
