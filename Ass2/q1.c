@@ -35,7 +35,7 @@ void enqueue(Queue *q, Node *node)
 // function to print a tree in a human readable format
 void printTree(Tree tree, int level)
 {
-    return ; 
+    // return ;  // dbg
     if (tree == NULL)
     {
         return;
@@ -77,6 +77,31 @@ Node *createNode(Node *parent)
     return node;
 }
 
+Tree T;
+int count;
+
+int happyNode(Node *N)
+{
+    if (N == NULL)
+    {
+        return 1;
+    }
+    if (N->phone || (N->left && N->left->phone) || (N->right && N->right->phone) || (N->parent && N->parent->phone))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int happyTree(Tree tree)
+{
+    if (tree == NULL)
+    {
+        return 1;
+    }
+    return happyTree( tree->left) && happyTree( tree->right) && happyNode(tree);
+}
+
 int findMinPhones(Tree tree)
 {
     if (tree == NULL)
@@ -86,35 +111,95 @@ int findMinPhones(Tree tree)
 
     if ((tree->parent != NULL && tree->parent->phone) || (tree->left != NULL && tree->left->phone) || (tree->right != NULL && tree->right->phone))
     {
+        printTree(T, 0);
+        printf("\n-------------------\n");
         return findMinPhones(tree->left) + findMinPhones(tree->right);
     }
 
     tree->phone = 1;
-    int k, m;
+    int k, m, flag = 0;
     k = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
+    tree->phone = 0;
 
-    // if (tree->left != NULL)
-    // {
-    //     tree->left->phone = 1;
-    //     m = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
-    //     k = k < m ? k : m;
-    //     tree->left->phone = 0;
-    // }
-    // if (tree->right != NULL)
-    // {
-    //     tree->right->phone = 1;
-    //     m = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
-    //     k = k < m ? k : m;
-    //     tree->right->phone = 0;
-    // }
+    if (tree->left != NULL)
+    {
+        tree->left->phone = 1;
+        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
+        if (k > m)
+        {
+            k = m;
+            flag = 1;
+        }
+        tree->phone = 1;
+        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 2;
+        if (k > m)
+        {
+            k = m;
+            flag = 2;
+        }
+        tree->phone = 0;
+        tree->left->phone = 0;
+    }
+    if (tree->right != NULL)
+    {
+        tree->right->phone = 1;
+        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 1;
+        if (k > m)
+        {
+            k = m;
+            flag = 3;
+        }
+        tree->phone = 1;
+        m = findMinPhones(tree->left) + findMinPhones(tree->right) + 2;
+        if (k > m)
+        {
+            k = m;
+            flag = 4;
+        }
+        tree->phone = 0;
+        tree->right->phone = 0;
+    }
     if (tree->right != NULL && tree->left != NULL)
     {
         tree->right->phone = 1;
         tree->left->phone = 1;
         m = findMinPhones(tree->left) + findMinPhones(tree->right) + 2;
-        k = k < m ? k : m;
+        if (k > m)
+        {
+            k = m;
+            flag = 5;
+        }
+
         tree->right->phone = 0;
         tree->left->phone = 0;
+    }
+
+    if (flag == 0)
+    {
+        tree->phone = 1;
+    }
+    if (flag == 1)
+    {
+        tree->left->phone = 1;
+    }
+    if (flag == 2)
+    {
+        tree->phone = 1;
+        tree->left->phone = 1;
+    }
+    if (flag == 3)
+    {
+        tree->right->phone = 1;
+    }
+    if (flag == 4)
+    {
+        tree->phone = 1;
+        tree->right->phone = 1;
+    }
+    if (flag == 5)
+    {
+        tree->right->phone = 1;
+        tree->left->phone = 1;
     }
 
     return k;
@@ -128,6 +213,7 @@ int main()
     n--;
 
     Tree tree = createNode(NULL);
+    T = tree;
     Queue q;
     q.front = NULL;
     q.rear = NULL;
@@ -138,31 +224,27 @@ int main()
 
     while (n)
     {
-
-        Node *currNode = dequeue(&q);
-        // scan left
-        scanf("%d", &m);
-        if (m)
+        Node *node = dequeue(&q);
+        int l, r;
+        scanf("%d %d", &l, &r);
+        if (l)
         {
-            currNode->left = createNode(currNode);
-            enqueue(&q, currNode->left);
+            node->left = createNode(node);
+            enqueue(&q, node->left);
         }
-        // printTree(tree, 0);
-
-        // scan right
-        scanf("%d", &m);
-        if (m)
+        if (r)
         {
-            currNode->right = createNode(currNode);
-            enqueue(&q, currNode->right);
+            node->right = createNode(node);
+            enqueue(&q, node->right);
         }
-        // printTree(tree, 0);
-
         n -= 2;
     }
 
     int ans = findMinPhones(tree);
     printTree(tree, 0);
-    printf("%d", ans);
+    printf("\n%d", ans);
+    // print corr ans
+    scanf("%d", &n);
+    printf("\n%d", n);
     return 0;
 }
