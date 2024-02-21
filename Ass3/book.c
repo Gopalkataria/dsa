@@ -31,11 +31,6 @@ struct stHash
 
 typedef struct stHash *Hash;
 
-int getHash(int k)
-{
-    return k & MASK;
-}
-
 Hash createHash(int size)
 {
     Hash h = (Hash)malloc(sizeof(struct stHash));
@@ -48,7 +43,7 @@ Hash createHash(int size)
 
 void addSubtoHS(Hash h, int k, Subsequence s)
 {
-    int index = getHash(k);
+    int index = k & MASK;
     Subsequence t = h->table[index];
     if (t == NULL)
     {
@@ -64,23 +59,16 @@ void addSubtoHS(Hash h, int k, Subsequence s)
 Subsequence removeSubsequence(Subsequence *head, int data)
 {
     Subsequence current = *head;
-    Subsequence previous = NULL;
+    Subsequence t = NULL;
 
-    while (current != NULL)
+    while (current->next != NULL)
     {
-        if (current->wants == data)
+        if (current->next->wants == data)
         {
-            if (previous == NULL)
-            {
-                *head = current->next;
-            }
-            else
-            {
-                previous->next = current->next;
-            }
-            return current;
+            t = current->next;
+            current->next = t->next;
+            return t;
         }
-        previous = current;
         current = current->next;
     }
 
@@ -89,13 +77,22 @@ Subsequence removeSubsequence(Subsequence *head, int data)
 
 Subsequence getSubfromHS(Hash h, int k)
 {
-    int index = getHash(k);
+    int index = k & MASK;
     Subsequence t = NULL;
 
     if (h->table[index] != NULL)
     {
-        t = removeSubsequence(&h->table[index], k);
-        return t; 
+        if (h->table[index]->wants == k)
+        {
+            t = h->table[index];
+            h->table[index] = t->next;
+            return t;
+        }
+        else
+        {
+            t = removeSubsequence(&h->table[index], k);
+            return t;
+        }
     }
     else
     {
@@ -136,14 +133,16 @@ int main()
     Subsequence maxsubsequence = NULL;
     int maxsize = 0;
 
-    Hash H = createHash( MASK + 1);
+    Hash H = createHash(MASK + 1);
     assert(H != NULL);
+
+    Subsequence s2, s1;
 
     for (int i = 0; i < n; i++)
     {
         int x;
         scanf("%d", &x);
-        Subsequence s1 = getSubfromHS(H, x);
+        s1 = getSubfromHS(H, x);
 
         if (s1 == NULL)
         {
@@ -151,24 +150,17 @@ int main()
         }
         addtoSubsequence(s1, i);
 
+        s2 = getSubfromHS(H, x + 1);
+        if (s2 != NULL)
+        {
+            if (s2->currsize > s1->currsize)
+                s1 = s2;
+        }
+
         if (s1->currsize > maxsize)
         {
             maxsize = s1->currsize;
             maxsubsequence = s1;
-        }
-
-        Subsequence s2 = getSubfromHS(H, x + 1);
-        if (s2 != NULL)
-        {
-            if (s2->currsize > s1->currsize)
-            {
-                s1 = s2;
-                s2 = NULL;
-            }
-            else
-            {
-                s2 = NULL;
-            }
         }
 
         addSubtoHS(H, x + 1, s1);
@@ -176,10 +168,12 @@ int main()
 
     // print indices in max Subsequence
     Node temp = maxsubsequence->listindices;
-    printf("%d\n", maxsubsequence->currsize); 
+    printf("%d\n", maxsubsequence->currsize);
     while (temp != NULL)
     {
         printf("%d ", temp->data);
         temp = temp->next;
     }
+
+    return 0;
 }
