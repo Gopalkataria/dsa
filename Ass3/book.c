@@ -2,178 +2,309 @@
 #include <stdlib.h>
 #include <assert.h>
 
-const int MASK = (1 << 17) - 1;
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
+const int SMASK = 8;
+const int MASK = (1 << SMASK) - 1;
+
+const int cacheS = 0;
+const int cachemask = (1 << cacheS) - 1; 
 
 typedef struct stNode
 {
-    int data;
-    struct stNode *next;
+  int data;
+  struct stNode *next;
 } stNode;
 
 typedef stNode *Node;
+typedef struct stTree *Tree;
 
 typedef struct stSubsequence
 {
-    int wants;
-    int currsize;
-    Node listindices;
-    Node listindicesend;
-    struct stSubsequence *next;
+  int wants;
+  int currsize;
+  Node listindices;
+  Node listindicesend;
+  Tree parent; 
 } stSubsequence;
 
 typedef stSubsequence *Subsequence;
 
-struct stHash
+struct stTree
 {
-    int key;
-    Subsequence *table;
+  int key;
+  struct stTree *left;
+  struct stTree *right;
+  int height;
+  Subsequence *table;
+  short size;
 };
 
-typedef struct stHash *Hash;
 
-Hash createHash(int size)
+Tree createTree(int key)
 {
-    Hash h = (Hash)malloc(sizeof(struct stHash));
-    assert(h != NULL);
-    h->key = size;
-    h->table = (Subsequence *)calloc(size, sizeof(Subsequence));
-    assert(h->table != NULL);
-    return h;
+  Tree t = (Tree)malloc(sizeof(struct stTree));
+  assert(t != NULL);
+  t->key = key;
+  t->table = NULL;
+  t->left = NULL;
+  t->right = NULL;
+  t->height = 1;
+  t->size = 0;
+  return t;
 }
 
-void addSubtoHS(Hash h, int k, Subsequence s)
+int height(Tree t)
 {
-    int index = k & MASK;
-    Subsequence t = h->table[index];
-    if (t == NULL)
-    {
-        h->table[index] = s;
-    }
-    else
-    {
-        h->table[index] = s;
-        s->next = t;
-    }
+  if (t == NULL)
+    return 0;
+  return t->height;
 }
 
-Subsequence removeSubsequence(Subsequence *head, int data)
+int balance( Tree t )
 {
-    Subsequence current = *head;
-    Subsequence t = NULL;
+  if( t == NULL )
+    return 0;
+  return height( t->left ) - height( t->right );
+}
 
-    while (current->next != NULL)
-    {
-        if (current->next->wants == data)
-        {
-            t = current->next;
-            current->next = t->next;
-            return t;
-        }
-        current = current->next;
-    }
+Tree leftRotate( Tree t )
+{
+  if( t == NULL || t->right == NULL )
+    return t; 
 
+  Tree RC = t->right;
+  Tree t2 = RC->left;
+
+  RC->left = t;
+  t->right = t2;
+
+  t->height = 1 + max(height(t->left), height(t->right));
+  RC->height = 1 + max(height(RC->left), height(RC->right));
+
+  return RC; 
+}
+
+Tree rightRotate( Tree t ){
+  if( t == NULL || t->left == NULL )
+    return t;
+
+  Tree LC = t->left;
+  Tree t2 = LC->right;
+
+  LC->right = t;
+  t->left = t2;
+
+  t->height = 1 + max(height(t->left), height(t->right));
+  LC->height = 1 + max(height(LC->left), height(LC->right));
+
+  return LC; 
+}
+
+Tree addSubtoT(Tree t, Subsequence s)
+{
+  int k = s->wants >> SMASK;
+  int i = s->wants & MASK;
+  if (t == NULL)
+  {
+    t = createTree(k);
+
+    if (t->table == NULL)
+      t->table = (Subsequence *)calloc(MASK + 1, sizeof(Subsequence));
+
+    t->table[i] = s;
+    s->parent = t; 
+    t->size++;
+    return t;
+  }
+
+  if (t->key == k)
+  {
+
+    if (t->table == NULL)
+      t->table = (Subsequence *)calloc(MASK + 1, sizeof(Subsequence));
+
+    t->table[i] = s;
+    s->parent = t; 
+    t->size++;
+    return t;
+  }
+
+  if (t->key > k)
+  {
+    t->left = addSubtoT(t->left, s);
+  }
+  else
+  {
+    t->right = addSubtoT(t->right, s);
+  }
+
+  int b = balance(t); 
+
+  if( b > 1 && k < t->left->key ){
+    return rightRotate(t);
+  }
+
+  if( b < -1 && k > t->right->key){
+    return leftRotate(t); 
+  }
+
+  if( b > 1 && k > t->left->key){
+    t->left = leftRotate(t->left);
+    return rightRotate(t);
+  }
+
+  if( b < -1 && k < t->right->key){
+    t->right = rightRotate(t->right);
+    return leftRotate(t); 
+  }
+
+  return t;
+}
+
+Subsequence getSubfromT(Tree t, int query)
+{
+
+  if (t == NULL)
     return NULL;
-}
 
-Subsequence getSubfromHS(Hash h, int k)
-{
-    int index = k & MASK;
-    Subsequence t = NULL;
+  int k = query >> SMASK;
+  int i = query & MASK;
 
-    if (h->table[index] != NULL)
+  if (t->key == k)
+  {
+    if (t->table == NULL)
     {
-        if (h->table[index]->wants == k)
-        {
-            t = h->table[index];
-            h->table[index] = t->next;
-            return t;
-        }
-        else
-        {
-            t = removeSubsequence(&h->table[index], k);
-            return t;
-        }
+      return NULL;
     }
-    else
+
+    Subsequence s = t->table[i];
+    t->table[i] = NULL;
+    if (s != NULL)
+      t->size--;
+    if (t->size == 0)
     {
-        return NULL;
+      free(t->table);
+      t->table = NULL;
     }
+    return s;
+  }
+
+  if (t->key > k)
+  {
+    return getSubfromT(t->left, query);
+  }
+  else if (t->key < k)
+  {
+    return getSubfromT(t->right, query);
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 Subsequence createSubsequence(int wants)
 {
-    Subsequence s = (Subsequence)malloc(sizeof(stSubsequence));
-    assert(s != NULL);
-    s->wants = wants;
-    s->currsize = 0;
-    s->listindices = NULL;
-    return s;
+  Subsequence s = (Subsequence)malloc(sizeof(stSubsequence));
+  assert(s != NULL);
+  s->wants = wants;
+  s->currsize = 0;
+  s->listindices = NULL;
+  s->parent = NULL; 
+  return s;
 }
 
 void addtoSubsequence(Subsequence s, int index)
 {
-    Node newnode = (Node)malloc(sizeof(stNode));
-    assert(newnode != NULL);
-    newnode->data = index;
-    newnode->next = NULL;
-    if (s->listindices == NULL)
-        s->listindices = newnode;
-    else
-        s->listindicesend->next = newnode;
+  Node newnode = (Node)malloc(sizeof(stNode));
+  assert(newnode != NULL);
+  newnode->data = index;
+  newnode->next = NULL;
+  if (s->listindices == NULL)
+  {
+    s->listindices = newnode;
     s->listindicesend = newnode;
-    s->wants++;
-    s->currsize++;
+  }
+  else
+    s->listindicesend->next = newnode;
+  s->listindicesend = newnode;
+  s->wants++;
+  s->currsize++;
+}
+
+void addtoCache( Tree * cache , int *index , Tree t ){
+  *index = (*index + 1) & cachemask;
+  cache[*index] = t; 
+}
+
+Tree getfromCache( Tree * Cache , int query , Tree t ){
+  int k = query >> SMASK;
+  Tree temp = t; 
+  for (int i = 0; i < cachemask + 1; i++)
+  {
+    if( Cache[i] != NULL && (Cache[i])->key == k ){
+      temp = Cache[i];
+      return temp;
+    }
+  }
+  return temp; 
 }
 
 int main()
 {
-    int n;
-    scanf("%d", &n);
+  int n;
+  scanf("%d", &n);
 
-    Subsequence maxsubsequence = NULL;
-    int maxsize = 0;
+  Subsequence maxsubsequence = NULL;
+  int maxsize = 0;
 
-    Hash H = createHash(MASK + 1);
-    assert(H != NULL);
+  Tree t = NULL , ct = NULL;
 
-    Subsequence s2, s1;
+  Tree * Cache = (Tree *) calloc(cachemask + 1, sizeof(Tree));
+  int index = 0; 
 
-    for (int i = 0; i < n; i++)
+  Subsequence s2,
+      s1;
+
+  for (int i = 0; i < n; i++)
+  {
+    int x;
+    scanf("%d", &x);
+    // ct = t; 
+    ct = getfromCache(Cache,x, t);
+    s1 = getSubfromT(ct, x);
+    if (s1 == NULL)
     {
-        int x;
-        scanf("%d", &x);
-        s1 = getSubfromHS(H, x);
+      s1 = createSubsequence(x);
+    }
+    addtoSubsequence(s1, i);
 
-        if (s1 == NULL)
-        {
-            s1 = createSubsequence(x);
-        }
-        addtoSubsequence(s1, i);
-
-        s2 = getSubfromHS(H, x + 1);
-        if (s2 != NULL)
-        {
-            if (s2->currsize > s1->currsize)
-                s1 = s2;
-        }
-
-        if (s1->currsize > maxsize)
-        {
-            maxsize = s1->currsize;
-            maxsubsequence = s1;
-        }
-
-        addSubtoHS(H, x + 1, s1);
+    ct = getfromCache(Cache, x, t);
+    s2 = getSubfromT(ct, x + 1);
+    if (s2 != NULL)
+    {
+      if (s2->currsize > s1->currsize)
+        s1 = s2;
     }
 
-    // print indices in max Subsequence
-    Node temp = maxsubsequence->listindices;
-    printf("%d\n", maxsubsequence->currsize);
-    while (temp != NULL)
+    if (s1->currsize > maxsize)
     {
-        printf("%d ", temp->data);
-        temp = temp->next;
+      maxsize = s1->currsize;
+      maxsubsequence = s1;
     }
 
-    return 0;
+    t = addSubtoT(t, s1);
+    addtoCache(Cache, &index, s1->parent);
+  }
+
+  Node temp = maxsubsequence->listindices;
+  printf("%d\n", maxsubsequence->currsize);
+  while (temp != NULL)
+  {
+    printf("%d ", temp->data);
+    temp = temp->next;
+  }
+
+  return 0;
 }

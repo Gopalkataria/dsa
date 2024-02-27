@@ -1,13 +1,8 @@
-m = input()
-d = {i:[] for i in range(10**9)}
+from random import randint
 
-print("INP NOW :")
-n = map( int  , input().split() ) 
+k = randint(1, 2*(10**5))
 
+print(k)
 
-
-for i in range(n):
-    k = n[i]
-    d[k].append(i)
-
-print(d)
+for i in range(k):
+    print(randint(1, 10**9), end=' ')
