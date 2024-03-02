@@ -8,7 +8,7 @@ const int SMASK = 8;
 const int MASK = (1 << SMASK) - 1;
 
 const int cacheS = 0;
-const int cachemask = (1 << cacheS) - 1; 
+const int cachemask = (1 << cacheS) - 1;
 
 typedef struct stNode
 {
@@ -25,7 +25,7 @@ typedef struct stSubsequence
   int currsize;
   Node listindices;
   Node listindicesend;
-  Tree parent; 
+  Tree parent;
 } stSubsequence;
 
 typedef stSubsequence *Subsequence;
@@ -39,7 +39,6 @@ struct stTree
   Subsequence *table;
   short size;
 };
-
 
 Tree createTree(int key)
 {
@@ -61,17 +60,17 @@ int height(Tree t)
   return t->height;
 }
 
-int balance( Tree t )
+int balance(Tree t)
 {
-  if( t == NULL )
+  if (t == NULL)
     return 0;
-  return height( t->left ) - height( t->right );
+  return height(t->left) - height(t->right);
 }
 
-Tree leftRotate( Tree t )
+Tree leftRotate(Tree t)
 {
-  if( t == NULL || t->right == NULL )
-    return t; 
+  if (t == NULL || t->right == NULL)
+    return t;
 
   Tree RC = t->right;
   Tree t2 = RC->left;
@@ -82,11 +81,12 @@ Tree leftRotate( Tree t )
   t->height = 1 + max(height(t->left), height(t->right));
   RC->height = 1 + max(height(RC->left), height(RC->right));
 
-  return RC; 
+  return RC;
 }
 
-Tree rightRotate( Tree t ){
-  if( t == NULL || t->left == NULL )
+Tree rightRotate(Tree t)
+{
+  if (t == NULL || t->left == NULL)
     return t;
 
   Tree LC = t->left;
@@ -98,7 +98,7 @@ Tree rightRotate( Tree t ){
   t->height = 1 + max(height(t->left), height(t->right));
   LC->height = 1 + max(height(LC->left), height(LC->right));
 
-  return LC; 
+  return LC;
 }
 
 Tree addSubtoT(Tree t, Subsequence s)
@@ -113,7 +113,7 @@ Tree addSubtoT(Tree t, Subsequence s)
       t->table = (Subsequence *)calloc(MASK + 1, sizeof(Subsequence));
 
     t->table[i] = s;
-    s->parent = t; 
+    s->parent = t;
     t->size++;
     return t;
   }
@@ -125,7 +125,7 @@ Tree addSubtoT(Tree t, Subsequence s)
       t->table = (Subsequence *)calloc(MASK + 1, sizeof(Subsequence));
 
     t->table[i] = s;
-    s->parent = t; 
+    s->parent = t;
     t->size++;
     return t;
   }
@@ -139,37 +139,44 @@ Tree addSubtoT(Tree t, Subsequence s)
     t->right = addSubtoT(t->right, s);
   }
 
-  int b = balance(t); 
+  int b = balance(t);
 
-  if( b > 1 && k < t->left->key ){
-    return rightRotate(t);
-  }
+  if (t->key & ((1 << 3) - 1))
+  {
+    if (b > 1 && k < t->left->key)
+    {
+      return rightRotate(t);
+    }
 
-  if( b < -1 && k > t->right->key){
-    return leftRotate(t); 
-  }
+    if (b < -1 && k > t->right->key)
+    {
+      return leftRotate(t);
+    }
 
-  if( b > 1 && k > t->left->key){
-    t->left = leftRotate(t->left);
-    return rightRotate(t);
-  }
+    if (b > 1 && k > t->left->key)
+    {
+      t->left = leftRotate(t->left);
+      return rightRotate(t);
+    }
 
-  if( b < -1 && k < t->right->key){
-    t->right = rightRotate(t->right);
-    return leftRotate(t); 
+    if (b < -1 && k < t->right->key)
+    {
+      t->right = rightRotate(t->right);
+      return leftRotate(t);
+    }
   }
 
   return t;
 }
 
-Subsequence getSubfromT(Tree t, int query)
+Subsequence getSubfromT(Tree t, Subsequence S )
 {
 
   if (t == NULL)
     return NULL;
 
-  int k = query >> SMASK;
-  int i = query & MASK;
+  int k = S->wants >> SMASK;
+  int i = S->wants & MASK;
 
   if (t->key == k)
   {
@@ -188,6 +195,37 @@ Subsequence getSubfromT(Tree t, int query)
       t->table = NULL;
     }
     return s;
+  }
+
+  if (t->key > k)
+  {
+    return getSubfromT(t->left, S);
+  }
+  else if (t->key < k)
+  {
+    return getSubfromT(t->right, S);
+  }
+  else
+  {
+    return NULL;
+  }
+}
+Subsequence findSubfromT(Tree t, int query)
+{
+
+  if (t == NULL)
+    return NULL;
+
+  int k = query >> SMASK;
+  int i = query & MASK;
+
+  if (t->key == k)
+  {
+    if (t->table == NULL)
+    {
+      return NULL;
+    }
+    return t->table[i];
   }
 
   if (t->key > k)
@@ -211,7 +249,7 @@ Subsequence createSubsequence(int wants)
   s->wants = wants;
   s->currsize = 0;
   s->listindices = NULL;
-  s->parent = NULL; 
+  s->parent = NULL;
   return s;
 }
 
@@ -233,22 +271,26 @@ void addtoSubsequence(Subsequence s, int index)
   s->currsize++;
 }
 
-void addtoCache( Tree * cache , int *index , Tree t ){
+void addtoCache(Tree *cache, int *index, Tree t)
+{
   *index = (*index + 1) & cachemask;
-  cache[*index] = t; 
+  cache[*index] = t;
 }
 
-Tree getfromCache( Tree * Cache , int query , Tree t ){
+Tree getfromCache(Tree *Cache, int query, Tree t)
+{
   int k = query >> SMASK;
-  Tree temp = t; 
+  Tree temp = t;
   for (int i = 0; i < cachemask + 1; i++)
   {
-    if( Cache[i] != NULL && (Cache[i])->key == k ){
+    if (Cache[i] != NULL && (Cache[i])->key == k)
+    {
       temp = Cache[i];
+      // printf("*");
       return temp;
     }
   }
-  return temp; 
+  return temp;
 }
 
 int main()
@@ -259,10 +301,10 @@ int main()
   Subsequence maxsubsequence = NULL;
   int maxsize = 0;
 
-  Tree t = NULL , ct = NULL;
+  Tree t = NULL, ct = NULL;
 
-  Tree * Cache = (Tree *) calloc(cachemask + 1, sizeof(Tree));
-  int index = 0; 
+  Tree *Cache = (Tree *)calloc(cachemask + 1, sizeof(Tree));
+  int index = 0;
 
   Subsequence s2,
       s1;
@@ -271,21 +313,27 @@ int main()
   {
     int x;
     scanf("%d", &x);
-    // ct = t; 
-    ct = getfromCache(Cache,x, t);
-    s1 = getSubfromT(ct, x);
+    ct = t;
+    s1 = findSubfromT(ct, x);
+    int h1 = s1->wants & MASK;
     if (s1 == NULL)
     {
       s1 = createSubsequence(x);
     }
     addtoSubsequence(s1, i);
 
-    ct = getfromCache(Cache, x, t);
-    s2 = getSubfromT(ct, x + 1);
+    s2 = findSubfromT(ct, x + 1);
     if (s2 != NULL)
     {
-      if (s2->currsize > s1->currsize)
-        s1 = s2;
+      if (s2->currsize < s1->currsize)
+      {
+        s2 = getSubfromT(t, x + 1);
+        addSubtoT(t, s1);
+      }
+    } else {
+      if( (s1->wants & MASK )  != h1) {
+        
+      }
     }
 
     if (s1->currsize > maxsize)
@@ -294,8 +342,7 @@ int main()
       maxsubsequence = s1;
     }
 
-    t = addSubtoT(t, s1);
-    addtoCache(Cache, &index, s1->parent);
+    // addtoCache(Cache, &index, s1->parent);
   }
 
   Node temp = maxsubsequence->listindices;
