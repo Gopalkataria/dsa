@@ -107,7 +107,7 @@ djikstra:
     
 
 justif:
-    pq.push({0, 1});
+    // pq.push({0, 1});
     if (k >= 0)
     {
         tie(a, b) = input[k--];
@@ -127,6 +127,7 @@ justif:
                 graph[a].push_back({1, b});
                 graph[1].push_back({a, b});
                 pq.push({b, a});
+                dist[a] = b; 
                 goto djikstra;
             }
         }
@@ -140,6 +141,7 @@ justif:
                 graph[a].push_back({1, b});
                 graph[1].push_back({a, b});
                 pq.push({b, a});
+                dist[a] = b;
                 goto djikstra;
             }
             else
