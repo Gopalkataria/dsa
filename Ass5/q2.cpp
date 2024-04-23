@@ -76,7 +76,9 @@ int main()
     dist.assign(n + 1, LLONG_MAX);
     dist[1] = 0;
     pq.push({0, 1});
+
 djikstra:
+
     visited.assign(n + 1, false);
     while (!pq.empty())
     {
@@ -100,18 +102,15 @@ djikstra:
         }
     }
 
-    for (lint i = 1; i < n+1; i++)
-    {
-        cout << i << "-" << dist[i] << "\n";
-    }
+   
     
 
 justif:
-    // pq.push({0, 1});
+
     if (k >= 0)
     {
         tie(a, b) = input[k--];
-        cout << a << " " << b << endl;
+        
         if (fibres.find(a) == fibres.end())
         {
             l = dist[a];
@@ -119,13 +118,11 @@ justif:
             {
                 count++;
                 goto justif;
-                // cout << a << " " << b << " " << l << endl;
+                
             }
             else
             {
                 fibres[a] = b;
-                graph[a].push_back({1, b});
-                graph[1].push_back({a, b});
                 pq.push({b, a});
                 dist[a] = b; 
                 goto djikstra;
@@ -133,13 +130,11 @@ justif:
         }
         else
         {
-            // cout << a << " " << b << " " << l << endl;
+            
             count++;
             if( fibres[a] > b)
             {
                 fibres[a] = b;
-                graph[a].push_back({1, b});
-                graph[1].push_back({a, b});
                 pq.push({b, a});
                 dist[a] = b;
                 goto djikstra;
