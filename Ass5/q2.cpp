@@ -3,53 +3,15 @@ using namespace std;
 
 #define lint long long int
 
-void merge(vector<pair<int, int>> &arr, int l, int m, int r)
-{
-    int n1 = m - l + 1;
-    int n2 = r - m;
-
-    vector<pair<int, int>> L(n1), R(n2);
-
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[l + i];
-    for (int j = 0; j < n2; j++)
-        R[j] = arr[m + 1 + j];
-
-    int i = 0, j = 0, k = l;
-    while (i < n1 && j < n2)
-    {
-        if (L[i].second >= R[j].second)
-            arr[k++] = L[i++];
-        else
-            arr[k++] = R[j++];
-    }
-
-    while (i < n1)
-        arr[k++] = L[i++];
-
-    while (j < n2)
-        arr[k++] = R[j++];
-}
-
-void mergeSort(vector<pair<int, int>> &arr, int l, int r)
-{
-    if (l < r)
-    {
-        int m = l + (r - l) / 2;
-        mergeSort(arr, l, m);
-        mergeSort(arr, m + 1, r);
-        merge(arr, l, m, r);
-    }
-}
-
 int main()
 {
-
     lint n, m, k;
     cin >> n >> m >> k;
 
     vector<vector<pair<lint, lint>>> graph(n + 1);
     lint a, b, l;
+
+    
     while (m--)
     {
         cin >> a >> b >> l;
@@ -57,6 +19,7 @@ int main()
         graph[b].push_back({a, l});
     }
 
+    
     vector<pair<int, int>> input;
     while (k--)
     {
@@ -64,21 +27,47 @@ int main()
         input.push_back({a, b});
     }
 
+    
     k = input.size() - 1;
-    mergeSort(input, 0, k);
+    for (lint curr_size = 1; curr_size <= k; curr_size *= 2)
+    {
+        for (lint left_start = 0; left_start < k; left_start += 2 * curr_size)
+        {
+            lint mid = min(left_start + curr_size - 1, k);
+            lint right_end = min(left_start + 2 * curr_size - 1, k);
+            lint n1 = mid - left_start + 1;
+            lint n2 = right_end - mid;
+            vector<pair<lint, lint>> L(n1), R(n2);
+            for (lint i = 0; i < n1; i++)
+                L[i] = input[left_start + i];
+            for (lint j = 0; j < n2; j++)
+                R[j] = input[mid + 1 + j];
+            lint i = 0, j = 0, idx = left_start;
+            while (i < n1 && j < n2)
+            {
+                if (L[i].second >= R[j].second)
+                    input[idx++] = L[i++];
+                else
+                    input[idx++] = R[j++];
+            }
+            while (i < n1)
+                input[idx++] = L[i++];
+            while (j < n2)
+                input[idx++] = R[j++];
+        }
+    }
 
-    vector<lint> dist(n + 1);
+    
+    vector<lint> dist(n + 1, LLONG_MAX);
     vector<bool> visited(n + 1);
     priority_queue<pair<lint, lint>, vector<pair<lint, lint>>, greater<pair<lint, lint>>> pq;
     map<lint, lint> fibres;
     lint count = 0;
 
-    dist.assign(n + 1, LLONG_MAX);
     dist[1] = 0;
     pq.push({0, 1});
 
 djikstra:
-
     visited.assign(n + 1, false);
     while (!pq.empty())
     {
@@ -102,15 +91,10 @@ djikstra:
         }
     }
 
-   
-    
-
 justif:
-
     if (k >= 0)
     {
         tie(a, b) = input[k--];
-        
         if (fibres.find(a) == fibres.end())
         {
             l = dist[a];
@@ -118,21 +102,19 @@ justif:
             {
                 count++;
                 goto justif;
-                
             }
             else
             {
                 fibres[a] = b;
                 pq.push({b, a});
-                dist[a] = b; 
+                dist[a] = b;
                 goto djikstra;
             }
         }
         else
         {
-            
             count++;
-            if( fibres[a] > b)
+            if (fibres[a] > b)
             {
                 fibres[a] = b;
                 pq.push({b, a});
