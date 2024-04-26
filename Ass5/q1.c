@@ -4,75 +4,113 @@
 
 #define lint long long int
 
-typedef struct node
-{
-    lint data;
-    struct node *next;
-} node;
+lint *links;
+lint *sizes;
+lint *heads;
 
-typedef struct graphnode
+lint find(lint a)
 {
-    node *connections;
-    node *lastconnection;
-    lint nconnections;
-} graphnode;
-
-graphnode *graph;
-bool *visited;
-
-void dfs(int i)
-{
-    visited[i] = true;
-    for (node *a = graph[i].connections; a != NULL; a = a->next)
-        if (!visited[a->data])
-            dfs(a->data);
+    while (a != links[a])
+    {
+        a = links[a];
+    }
+    return a;
 }
 
-void addtographnode(graphnode *gn, lint n)
+bool same(lint a, lint b)
 {
-    node *newnode = (node *)malloc(sizeof(node));
-    newnode->data = n;
-    newnode->next = NULL;
-    if (gn->lastconnection == NULL)
-        gn->connections = newnode;
-    else
-        gn->lastconnection->next = newnode;
-    gn->lastconnection = newnode;
-    gn->nconnections++;
+    if (find(a) == find(b))
+    {
+        return true;
+    }
+    return false;
 }
 
-void connect(lint a, lint b)
+void unite(lint a, lint b)
 {
-    addtographnode(graph + a, b);
-    addtographnode(graph + b, a);
+    a = find(a);
+    b = find(b);
+    if (sizes[a] < sizes[b])
+    {
+        a = a ^ b;
+        b = a ^ b;
+        a = a ^ b;
+    }
+    sizes[a] += sizes[b];
+    links[b] = a;
+    heads[b] = 0;
 }
 
 int main()
 {
-    lint n, q, a, b;
-    scanf("%lld %lld", &n, &q);
-    graph = (graphnode *)calloc(n + 1, sizeof(graphnode));
 
-    while (q--)
+    lint n, m;
+
+    scanf("%lld %lld", &n, &m);
+
+    links = (lint *)malloc((n + 1) * sizeof(lint));
+    sizes = (lint *)malloc((n + 1) * sizeof(lint));
+    heads = (lint *)malloc((n + 1) * sizeof(lint));
+
+    for (lint i = 0; i <= n; i++)
     {
-        scanf("%lld %lld", &a, &b);
-        connect(a, b);
+        links[i] = i;
+        sizes[i] = 1;
+        heads[i] = 1;
     }
 
-    visited = (bool *)calloc(n + 1, sizeof(bool));
-    lint count = 0 ;
-    lint sentinent[n + 1];
-    for (int i = 1; i <= n; i++)
-        if (!visited[i])
+    lint count = n - 1;
+    lint a, b;
+    while (m--)
+    {
+        scanf("%d %d", &a, &b);
+        if (!(same(a, b)))
         {
-            sentinent[count++] = i;
-            dfs(i);
+            unite(a, b);
+            count--;
         }
+    }
+    printf("%d\n", count);
+    if (count == 0)
+    {
+        return 0;
+    }
+    lint i;
+    for (i = 1; i <= n; i++)
+    {
+        if (heads[i] == 1)
+        {
+            printf("%d ", i);
+            i++;
+            break;
+        }
+    }
+    if (count > 1)
+    {
+        for (; i <= n; i++)
+        {
+            if (heads[i] == 1)
+            {
+                printf("%d\n%d ", i, i);
+                count--;
+                if (count == 1)
+                {
+                    i++;
+                    break;
+                }
+            }
+        }
+    }
 
-    printf("%lld\n", count - 1);
-
-    for (lint i = 0; i < count - 1; i++)
-        printf("%lld %lld\n", sentinent[i], sentinent[i + 1]);
+    for (; i <= n; i++)
+    {
+        if (heads[i] == 1)
+        {
+            printf("%d", i);
+            i++;
+            break;
+        }
+    }
 
     return 0;
 }
